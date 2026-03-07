@@ -15,7 +15,9 @@ No test runner is configured yet.
 
 ## Architecture
 
-**Stack:** Vue 3 + TypeScript + Pinia + Vue Router. Tailwind and shadcn-vue are planned but not yet installed.
+**Stack:** Vue 3 + TypeScript + Pinia + Vue Router + Reka UI (headless components, custom CSS styling).
+
+**Reka UI:** Unstyled, accessible component primitives. Docs for LLM: https://reka-ui.com/llms.txt
 
 **Path alias:** `@/` maps to `src/`.
 
