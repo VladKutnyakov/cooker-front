@@ -23,22 +23,65 @@ No test runner is configured yet.
 
 **TypeScript:** `noUncheckedIndexedAccess` is enabled — array/object lookups return `T | undefined`.
 
-## Planned Structure (per Cooker_plan.md)
+## Project Structure
+
+Hybrid modular architecture: shared layers (api, stores, types, composables) are flat; components are grouped by feature.
 
 ```
 src/
-├── api/             # fetch/axios wrapper, all backend calls
+├── api/                    # Backend communication (pure functions, no Vue imports)
+│   ├── client.ts           #   fetch wrapper (VITE_API_URL, error handling)
+│   ├── recipes.ts          #   Recipe CRUD + generation endpoints
+│   ├── ingredients.ts      #   Ingredient CRUD endpoints
+│   ├── chat.ts             #   Chat message endpoints
+│   └── voice.ts            #   Audio upload → transcription
+├── composables/            # Reusable reactive logic
+│   ├── useSSE.ts           #   SSE connection, chunk parsing, reconnect
+│   ├── useVoiceInput.ts    #   MediaRecorder lifecycle + audio capture
+│   ├── useRecipeStream.ts  #   Orchestrates SSE + recipe store for generation
+│   └── useMediaQuery.ts    #   Reactive mobile/desktop detection
+├── stores/                 # Pinia stores (global singletons, flat)
+│   ├── ingredients.ts      #   Product list, categories, CRUD
+│   ├── recipes.ts          #   Generated recipes, favorites, current recipe
+│   ├── chat.ts             #   Chat history per recipe, streaming state
+│   └── ui.ts               #   Theme (light/dark), sidebar, loading
+├── types/                  # Shared TypeScript interfaces (no src/ imports)
+│   ├── ingredient.ts       #   Ingredient, IngredientCategory
+│   ├── recipe.ts           #   Recipe, RecipeIngredient, RecipeStep
+│   ├── chat.ts             #   ChatMessage, ChatRole
+│   └── api.ts              #   ApiResponse<T>, ApiError, SSEEvent
 ├── components/
-│   ├── ui/          # shadcn-vue primitives
-│   ├── ingredients/ # fridge/ingredient management
-│   ├── recipe/      # recipe display with streaming markdown
-│   └── chat/        # LLM chat window
-├── composables/
-│   ├── useVoiceInput.ts  # MediaRecorder → Whisper API
-│   └── useSSE.ts         # Server-Sent Events for LLM streaming
-├── stores/          # Pinia stores (ingredients, recipe, chat, auth)
-├── views/           # Route-level components
-└── types/           # Shared TypeScript interfaces
+│   ├── ui/                 #   Design system primitives (stateless, props/events only)
+│   ├── layout/             #   AppShell, BottomNav, SideNav, PageHeader
+│   ├── home/               #   RecipePrompt, CategoryChips, ProductsSummary, FavoritesList
+│   ├── fridge/             #   CategoryTabs, IngredientList, IngredientItem, AddIngredient
+│   ├── recipe/             #   RecipeHero, RecipeDescription, IngredientChecklist, StepList
+│   └── chat/               #   ChatPanel, ChatMessage, ChatInput
+├── views/                  # Route-level components (thin orchestrators)
+│   ├── HomeView.vue
+│   ├── FridgeView.vue
+│   ├── RecipeView.vue
+│   └── HistoryView.vue
+├── router/
+│   └── index.ts            # Routes with lazy-loading
+├── assets/
+├── App.vue
+└── main.ts
+```
+
+### Layer rules
+- **ui/** never imports stores, api, or composables — props/events only
+- **api/** — pure functions, never import Vue or stores
+- **types/** — never import anything from src/
+- **composables** — orchestrate api + stores
+- **views** — thin, only compose feature components
+
+### Routes
+```
+/              → HomeView       (name: 'home')
+/fridge        → FridgeView     (name: 'fridge')
+/recipe/:id    → RecipeView     (name: 'recipe-detail')
+/history       → HistoryView    (name: 'history')
 ```
 
 ## Key Implementation Notes
