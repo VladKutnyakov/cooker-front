@@ -51,4 +51,19 @@ withDefaults(defineProps<{
   background-color: var(--primary);
   color: var(--primary-foreground);
 }
+
+.btn--secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.btn--outline {
+  background-color: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+.btn--ghost {
+  color: var(--foreground);
+}
 </style>
